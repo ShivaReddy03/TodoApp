@@ -15,6 +15,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,17 +38,23 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Todo(modifier: Modifier = Modifier){
-    var todoList = listOf("shiva","krishna","krish","pavi")
+    var newTodo by rememberSaveable { mutableStateOf("") }
+    var todoList by rememberSaveable { mutableStateOf(listOf("shiva","krishna","krish","pavi")) }
     Column {
         Row {
             TextField(
-                value = "",
-                onValueChange = {},
+                value = newTodo,
+                onValueChange = {
+                    newTodo = it
+                },
                 modifier = Modifier.weight(1f),
                 label = { Text("Enter todo")}
             )
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    todoList = todoList + newTodo
+                    newTodo = ""
+                },
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(text = "Add")
