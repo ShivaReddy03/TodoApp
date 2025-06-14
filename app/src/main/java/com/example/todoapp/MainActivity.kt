@@ -15,10 +15,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.todoapp.presentation.TodoViewModel
 import com.example.todoapp.ui.theme.ToDoAppTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,27 +41,32 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Todo(modifier: Modifier = Modifier){
-    var todoList = listOf("shiva","krishna","krish","pavi")
-    Column {
-        Row {
+    var viewModel : TodoViewModel = viewModel()
+    val todoList by viewModel.todoList.observeAsState(emptyList())
+    var title by remember { mutableStateOf("") }
+    Column(modifier = modifier.padding(16.dp)) {
+        Row(modifier = Modifier.padding(top = 24.dp)) {
             TextField(
-                value = "",
-                onValueChange = {},
+                value = title,
+                onValueChange = { title = it },
                 modifier = Modifier.weight(1f),
                 label = { Text("Enter todo")}
             )
             Button(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.padding(8.dp)
+                onClick = {
+                    if (title.isNotBlank()) {
+                        viewModel.addTodo(title)
+                        title = "" // Clear input after adding
+                    }
+                          },
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text(text = "Add")
             }
         }
-        LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            items(todoList) {
-                todo -> TodoCard(todo)
+        LazyColumn {
+            items(todoList) { todo ->
+                TodoCard(todo = todo.title, id = todo.id, viewModel = viewModel)
             }
         }
     }
@@ -62,7 +74,7 @@ fun Todo(modifier: Modifier = Modifier){
 
 
 @Composable
-fun TodoCard(todo: String, modifier: Modifier = Modifier){
+fun TodoCard(todo: String, id: Int, viewModel: TodoViewModel){
     Card(
         modifier = Modifier.padding(8.dp).fillMaxWidth()
     ) {
@@ -72,7 +84,7 @@ fun TodoCard(todo: String, modifier: Modifier = Modifier){
                 modifier = Modifier.padding(16.dp).weight(1f)
             )
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { viewModel.deleteTodo(id) },
                 modifier = Modifier.padding(8.dp)
             ) { Text(text = "Delete") }
         }
